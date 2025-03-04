@@ -21,7 +21,7 @@ const Login = () => {
         localStorage.setItem("token", data.data.token);
         localStorage.setItem("user", formData.eventId.toUpperCase());
         console.log(localStorage.getItem("user"));
-          navigate("/dashboard");
+        navigate("/dashboard");
 
         return "Logged in successfully!";
       },

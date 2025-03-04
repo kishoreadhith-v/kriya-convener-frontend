@@ -1,11 +1,11 @@
 import axios from "axios";
 
 // export const BASE_URL = "https://kriyadb.psgtech.ac.in/api";
-export const BASE_URL = "http://localhost:4300/api";
+export const BASE_URL = "https://kriyabackend.psgtech.ac.in/api";
 
 export const AUTH_URL = `${BASE_URL}/convenor-auth`;
 // export const REGISTER_URL = 'https://convener-backend.psgtech.ac.in';
-export const REGISTER_URL = "http://localhost:8080";
+export const REGISTER_URL = "http://localhost:8000";
 
 export const fetchRegister = (formData) =>
   axios.post(`${AUTH_URL}/register`, formData, {});

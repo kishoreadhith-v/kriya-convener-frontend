@@ -27,7 +27,7 @@ const PortalWrapper = () => {
           <h1 className="text-xl lg:text-3xl font-semibold">
             Convenor's Portal
           </h1>
-          <h2 className="text-gray-800">Kriya 2024</h2>
+          <h2 className="text-gray-800">Kriya 2025</h2>
         </div>
       </header>
       <main className=" flex flex-col lg:flex-row lg:pt-8 h-[calc(100vh-7rem)] lg:h-[calc(100vh-12rem)] overflow-hidden lg:px-[calc(100vw/12)] lg:space-x-8">
@@ -62,7 +62,17 @@ const PortalWrapper = () => {
               Participants
             </p>
           </Link>
-          {/* <Link
+          <Link
+            to="/dashboard/promote"
+            className="flex items-center space-x-4 group"
+          >
+            <TbAward className="text-xl text-sky-900 group-hover:opacity-70" />
+            <p className="text-lg text-sky-900 group-hover:opacity-70">
+              Promote
+            </p>
+          </Link>
+
+          <Link
             to="/dashboard/result"
             className="flex items-center space-x-4 group"
           >
@@ -70,7 +80,7 @@ const PortalWrapper = () => {
             <p className="text-lg text-sky-900 group-hover:opacity-70">
               Results
             </p>
-          </Link> */}
+          </Link>
           <button
             onClick={() => {
               localStorage.clear();
@@ -88,14 +98,14 @@ const PortalWrapper = () => {
           <Outlet />
         </div>
         <nav className="h-20 bg-gray-800 w-full lg:hidden flex items-center justify-evenly">
-    
-        <Link to="/dashboard/apply-attendance">
+
+          <Link to="/dashboard/apply-attendance">
             <FiUserCheck className="text-4xl text-gray-100" />
           </Link>
           <Link to="/dashboard/list-attendance">
             <BsListCheck className="text-4xl text-gray-100" />
           </Link>
-          
+
           <button
             onClick={() => {
               localStorage.clear();

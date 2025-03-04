@@ -8,6 +8,7 @@ import ApplyAttendance from "./pages/ApplyAttendance";
 import ListAttendance from "./pages/ListAttendance";
 import ListParticipants from "./pages/ListParticipants";
 import ResultPage from "./pages/ResultPage";
+import PromoteRound from "./pages/PromoteRound";
 
 const App = () => {
   return (
@@ -20,6 +21,8 @@ const App = () => {
             <Route path="apply-attendance" element={<ApplyAttendance />} />
             <Route path="list-attendance" element={<ListAttendance />} />
             <Route path="list-participants" element={<ListParticipants />} />
+            <Route path="result" element={<ResultPage />} />
+            <Route path="promote" element={<PromoteRound />} />
             {/* <Route path="result" element={<ResultPage />} /> */}
             <Route
               index
