@@ -16,7 +16,6 @@ const ResultPage = () => {
   const initialFormState = categories.reduce((acc, category) => {
     acc[category] = positions.map((position) => ({
       position,
-      teamName: "",
       teamSize: 1,
       kriyaIds: [""],
       bankDetails: {
