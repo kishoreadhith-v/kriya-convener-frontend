@@ -1,11 +1,75 @@
 import axios from "axios";
 
+export const mainBACKEND_URL = "https://kriyabackend.psgtech.ac.in";
+// export const BACKEND_URL = "https://kriyabackend.psgtech.ac.in";
+
+const mainBASE_URL = `${mainBACKEND_URL}/api`;
+
 // export const BASE_URL = "https://kriyadb.psgtech.ac.in/api";
 export const BASE_URL = "https://kriyabackend.psgtech.ac.in/api";
 
 export const AUTH_URL = `${BASE_URL}/convenor-auth`;
 // export const REGISTER_URL = 'https://convener-backend.psgtech.ac.in';
 export const REGISTER_URL = "https://kriyaconvenordb.psgtech.ac.in";
+
+export const submitWinnerDetails = async (formData) => {
+  try {
+    console.log("FormData contents:");
+
+    // Log each entry separately
+    for (const [key, value] of Object.entries(formData)) {
+      console.log(`${key}: ${value}`);
+    }
+
+    const res = await axios.post(
+      `${REGISTER_URL}/winner-details`,
+      formData,
+      {}
+    );
+
+    console.log("Winner details submitted:", res.data);
+    return res.data; // Return response data if needed
+  } catch (error) {
+    console.error(
+      "Error submitting winner details:",
+      error.response?.data || error.message
+    );
+
+    // Optionally return an error response or throw an error
+    return {
+      success: false,
+      error: error.response?.data || "An error occurred",
+    };
+  }
+};
+
+export const uploadPdf = async (file, kriyaId) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    console.log(file, formData, "hjvdhjvdjv", kriyaId);
+
+    const res = await axios.post(
+      `${mainBASE_URL}/upload`,
+      { file: file },
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          filetype: "PASSBOOK",
+          kriyaId: kriyaId,
+        },
+      }
+    );
+
+    console.log("Uploaded PDF:", res.data);
+
+    return res; // Assuming the server sends back the URL of the uploaded PDF
+  } catch (err) {
+    console.error("Error uploading PDF:", err);
+    throw err;
+  }
+};
 
 export const fetchRegister = (formData) =>
   axios.post(`${AUTH_URL}/register`, formData, {});
