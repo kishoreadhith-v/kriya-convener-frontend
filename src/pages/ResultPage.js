@@ -7,24 +7,37 @@ const ResultPage = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [eventId, setEventId] = useState("");
 
-  const [formData, setFormData] = useState(
-    categories.reduce((acc, category) => {
-      acc[category] = positions.map((position) => ({
-        position,
-        teamName: "",
-        teamSize: 1,
-        kriyaIds: [""],
-        bankDetails: {
-          accountHolder: "",
-          accountNumber: "",
-          ifscCode: "",
-          phoneNumber: "",
-          passbookImage: null,
-        },
-      }));
-      return acc;
-    }, {})
-  );
+  // Track which PSG positions are enabled
+  const [psgEnabled, setPsgEnabled] = useState({
+    winner: false,
+    runner: false,
+  });
+
+  const initialFormState = categories.reduce((acc, category) => {
+    acc[category] = positions.map((position) => ({
+      position,
+      teamName: "",
+      teamSize: 1,
+      kriyaIds: [""],
+      bankDetails: {
+        accountHolder: "",
+        accountNumber: "",
+        ifscCode: "",
+        phoneNumber: "",
+        passbookImage: null,
+      },
+    }));
+    return acc;
+  }, {});
+
+  const [formData, setFormData] = useState(initialFormState);
+
+  const handlePsgToggle = (position) => {
+    setPsgEnabled((prev) => ({
+      ...prev,
+      [position]: !prev[position],
+    }));
+  };
 
   const handleChange = (category, index, field, value) => {
     const updatedCategory = [...formData[category]];
@@ -54,11 +67,11 @@ const ResultPage = () => {
 
     try {
       const response = await uploadPdf(file, kriyaId);
-      const imageUrl = response.data.name; // Assuming backend returns { fileUrl: "uploaded_url" }
+      const imageUrl = response.data.name;
 
       if (imageUrl) {
         const updatedCategory = [...formData[category]];
-        updatedCategory[index].bankDetails.passbookImage = imageUrl; // Store the URL instead of the file
+        updatedCategory[index].bankDetails.passbookImage = imageUrl;
         setFormData({ ...formData, [category]: updatedCategory });
         console.log("File uploaded successfully:", imageUrl);
       } else {
@@ -76,30 +89,16 @@ const ResultPage = () => {
     setShowConfirmation(true);
   };
 
-  // Helper function to display FormData contents
-  // const logFormData = (formData) => {
-  //   const formDataObj = {};
-  //   for (let [key, value] of formData.entries()) {
-  //     formDataObj[key] = value;
-  //   }
-  //   console.log("FormData contents:", formDataObj);
-  // };
-
-  // Helper function to make API call
   const makeApiCall = async (formattedData, category, position) => {
     try {
-      // Log FormData before submission
-      // logFormData(formattedData);
       const formDataObj = {};
       for (let [key, value] of formattedData.entries()) {
         formDataObj[key] = value;
       }
 
-      console.log("FormData contents1234:", formDataObj);
-
+      console.log("FormData contents:", formDataObj);
       console.log(`Submitting data for ${category} ${position}`);
 
-      // Send the request for this participant
       const result = await submitWinnerDetails(formDataObj);
       console.log(`Server response for ${category} ${position}:`, result);
 
@@ -120,72 +119,237 @@ const ResultPage = () => {
     try {
       // Process each category separately
       for (const category of categories) {
-        // Process each participant (Winner/Runner-up) in the category
-        for (const participant of formData[category]) {
-          // Convert participant data to the required format
-          const formattedData = new FormData();
-          console.log("Processing participant:", participant);
+        // For PSG category, only process enabled positions
+        if (category === "PSG") {
+          for (const participant of formData[category]) {
+            // Skip if this position is not enabled
+            if (!psgEnabled[participant.position]) {
+              console.log(`Skipping PSG ${participant.position} - not enabled`);
+              continue;
+            }
 
-          // Add required fields to the FormData
-          formattedData.append("eventId", eventId);
-          formattedData.append("teamName", participant.teamName);
-          formattedData.append("teamSize", participant.teamSize);
-          console.log("idsss", participant.kriyaIds);
-          // Create a JSON string of the kriyaIds array
-          formattedData.append("teamMembers", participant.kriyaIds);
-          console.log("memem", formattedData.get("teamMembers"));
-
-          // Map position to teamPosition (lowercase as specified in the format)
-          formattedData.append(
-            "teamPosition",
-            participant.position.toLowerCase()
-          );
-          formattedData.append("teamAwardCategory", category);
-
-          // Add bank details
-          formattedData.append(
-            "beneficiaryAccountName",
-            participant.bankDetails.accountHolder
-          );
-          formattedData.append(
-            "beneficiaryAccountNumber",
-            participant.bankDetails.accountNumber
-          );
-          formattedData.append(
-            "beneficiaryIFSCCode",
-            participant.bankDetails.ifscCode
-          );
-          formattedData.append(
-            "beneficiaryPhoneNumber",
-            participant.bankDetails.phoneNumber
-          );
-
-          // Add passbook image if available
-          if (participant.bankDetails.passbookImage) {
-            formattedData.append(
-              "beneficiaryPassbookImage",
-              participant.bankDetails.passbookImage
-            );
+            // Process enabled PSG positions
+            await processParticipant(category, participant);
           }
-
-          // Make API call for this participant
-          await makeApiCall(formattedData, category, participant.position);
+        } else {
+          // Process all NON-PSG participants
+          for (const participant of formData[category]) {
+            await processParticipant(category, participant);
+          }
         }
       }
 
       setShowConfirmation(false);
-      // Optional: Add success notification or redirect after successful submission
       alert("All submissions completed successfully!");
     } catch (error) {
       console.error("Error submitting form:", error);
       setShowConfirmation(false);
-      // Optional: Add error notification
       alert("Error submitting form. Please check console for details.");
     }
   };
 
+  // Helper function to process a participant
+  const processParticipant = async (category, participant) => {
+    const formattedData = new FormData();
+    console.log("Processing participant:", participant);
+
+    formattedData.append("eventId", eventId);
+    formattedData.append("teamName", participant.teamName);
+    formattedData.append("teamSize", participant.teamSize);
+    console.log("idsss", participant.kriyaIds);
+
+    formattedData.append("teamMembers", participant.kriyaIds);
+    console.log("memem", formattedData.get("teamMembers"));
+
+    formattedData.append("teamPosition", participant.position.toLowerCase());
+    formattedData.append("teamAwardCategory", category);
+
+    formattedData.append(
+      "beneficiaryAccountName",
+      participant.bankDetails.accountHolder
+    );
+    formattedData.append(
+      "beneficiaryAccountNumber",
+      participant.bankDetails.accountNumber
+    );
+    formattedData.append(
+      "beneficiaryIFSCCode",
+      participant.bankDetails.ifscCode
+    );
+    formattedData.append(
+      "beneficiaryPhoneNumber",
+      participant.bankDetails.phoneNumber
+    );
+
+    if (participant.bankDetails.passbookImage) {
+      formattedData.append(
+        "beneficiaryPassbookImage",
+        participant.bankDetails.passbookImage
+      );
+    }
+
+    return makeApiCall(formattedData, category, participant.position);
+  };
+
   const handleCancel = () => {
     setShowConfirmation(false);
+  };
+
+  // Helper to determine if a form field is required
+  const isRequired = (category, position) => {
+    if (category === "NON-PSG") return true;
+    return psgEnabled[position];
+  };
+
+  // Helper to render participant form
+  const renderParticipantForm = (category, participant, index) => {
+    // Skip rendering PSG sections that are not enabled
+    if (category === "PSG" && !psgEnabled[participant.position]) {
+      return null;
+    }
+
+    return (
+      <div
+        key={index}
+        className="flex flex-col w-full p-6 mb-6 bg-gray-50 rounded-lg shadow-md"
+      >
+        <h3 className="font-semibold text-2xl text-sky-900 mb-4">
+          {participant.position}
+        </h3>
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}Team Name
+        </label>
+        <input
+          required={isRequired(category, participant.position)}
+          type="text"
+          className="rounded p-2 border border-gray-300 w-full mb-3"
+          value={participant.teamName}
+          onChange={(e) =>
+            handleChange(category, index, "teamName", e.target.value)
+          }
+        />
+
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}Team Size
+        </label>
+        <input
+          required={isRequired(category, participant.position)}
+          type="number"
+          min="1"
+          className="rounded p-2 border border-gray-300 w-full mb-3"
+          value={participant.teamSize}
+          onChange={(e) =>
+            handleChange(category, index, "teamSize", parseInt(e.target.value))
+          }
+        />
+
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}Kriya IDs
+        </label>
+        {participant.kriyaIds.map((id, kriyaIndex) => (
+          <input
+            required={isRequired(category, participant.position)}
+            key={kriyaIndex}
+            type="text"
+            className="rounded p-2 border border-gray-300 w-full mb-3"
+            placeholder={`Kriya ID ${kriyaIndex + 1}`}
+            value={id}
+            onChange={(e) =>
+              handleKriyaIdChange(category, index, kriyaIndex, e.target.value)
+            }
+          />
+        ))}
+
+        <h3 className="font-semibold text-xl text-sky-900 mt-4 mb-3">
+          Bank Details
+        </h3>
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}Account
+          Holder's Name
+        </label>
+        <input
+          required={isRequired(category, participant.position)}
+          type="text"
+          className="rounded p-2 border border-gray-300 w-full mb-3"
+          value={participant.bankDetails.accountHolder}
+          onChange={(e) =>
+            handleBankDetailChange(
+              category,
+              index,
+              "accountHolder",
+              e.target.value
+            )
+          }
+        />
+
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}Account Number
+        </label>
+        <input
+          required={isRequired(category, participant.position)}
+          type="text"
+          className="rounded p-2 border border-gray-300 w-full mb-3"
+          value={participant.bankDetails.accountNumber}
+          onChange={(e) =>
+            handleBankDetailChange(
+              category,
+              index,
+              "accountNumber",
+              e.target.value
+            )
+          }
+        />
+
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}IFSC Code
+        </label>
+        <input
+          required={isRequired(category, participant.position)}
+          type="text"
+          className="rounded p-2 border border-gray-300 w-full mb-3"
+          value={participant.bankDetails.ifscCode}
+          onChange={(e) =>
+            handleBankDetailChange(category, index, "ifscCode", e.target.value)
+          }
+        />
+
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}Phone Number
+        </label>
+        <input
+          required={isRequired(category, participant.position)}
+          type="tel"
+          className="rounded p-2 border border-gray-300 w-full mb-3"
+          value={participant.bankDetails.phoneNumber}
+          onChange={(e) =>
+            handleBankDetailChange(
+              category,
+              index,
+              "phoneNumber",
+              e.target.value
+            )
+          }
+        />
+
+        <label className="text-lg font-medium">
+          {isRequired(category, participant.position) ? "* " : ""}Upload
+          Passbook Image
+        </label>
+        <input
+          required={isRequired(category, participant.position)}
+          type="file"
+          className="rounded p-2 border border-gray-300 w-full mb-3"
+          onChange={(e) =>
+            handleFileUpload(
+              category,
+              index,
+              e.target.files[0],
+              participant.kriyaIds[0]
+            )
+          }
+        />
+      </div>
+    );
   };
 
   return (
@@ -210,156 +374,50 @@ const ResultPage = () => {
           </p>
         </div>
 
-        {categories.map((category) => (
-          <div key={category} className="mb-10">
-            <h2 className="text-3xl font-bold text-sky-900 mb-6">
-              {category} Category
-            </h2>
-            {formData[category].map((participant, index) => (
-              <div
-                key={index}
-                className="flex flex-col w-full p-6 mb-6 bg-gray-50 rounded-lg shadow-md"
-              >
-                <h3 className="font-semibold text-2xl text-sky-900 mb-4">
-                  {participant.position}
-                </h3>
-                <label className="text-lg font-medium">* Team Name</label>
-                <input
-                  required
-                  type="text"
-                  className="rounded p-2 border border-gray-300 w-full mb-3"
-                  value={participant.teamName}
-                  onChange={(e) =>
-                    handleChange(category, index, "teamName", e.target.value)
-                  }
-                />
+        {/* NON-PSG Category (required by default) */}
+        <div className="mb-10">
+          <h2 className="text-3xl font-bold text-sky-900 mb-6">
+            NON-PSG Category
+          </h2>
+          {formData["NON-PSG"].map((participant, index) =>
+            renderParticipantForm("NON-PSG", participant, index)
+          )}
+        </div>
 
-                <label className="text-lg font-medium">* Team Size</label>
+        {/* PSG Category with checkboxes */}
+        <div className="mb-10">
+          <h2 className="text-3xl font-bold text-sky-900 mb-6">PSG Category</h2>
+          <div className="flex flex-col w-full p-6 mb-6 bg-gray-50 rounded-lg shadow-md">
+            <p className="text-lg text-gray-700 mb-4">
+              Please select which positions to include for PSG category:
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
-                  required
-                  type="number"
-                  min="1"
-                  className="rounded p-2 border border-gray-300 w-full mb-3"
-                  value={participant.teamSize}
-                  onChange={(e) =>
-                    handleChange(
-                      category,
-                      index,
-                      "teamSize",
-                      parseInt(e.target.value)
-                    )
-                  }
+                  type="checkbox"
+                  checked={psgEnabled.winner}
+                  onChange={() => handlePsgToggle("winner")}
+                  className="w-5 h-5"
                 />
-
-                <label className="text-lg font-medium">* Kriya IDs</label>
-                {participant.kriyaIds.map((id, kriyaIndex) => (
-                  <input
-                    required
-                    key={kriyaIndex}
-                    type="text"
-                    className="rounded p-2 border border-gray-300 w-full mb-3"
-                    placeholder={`Kriya ID ${kriyaIndex + 1}`}
-                    value={id}
-                    onChange={(e) =>
-                      handleKriyaIdChange(
-                        category,
-                        index,
-                        kriyaIndex,
-                        e.target.value
-                      )
-                    }
-                  />
-                ))}
-
-                <h3 className="font-semibold text-xl text-sky-900 mt-4 mb-3">
-                  Bank Details
-                </h3>
-                <label className="text-lg font-medium">
-                  * Account Holder's Name
-                </label>
+                <span className="text-lg">Include Winner</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
-                  required
-                  type="text"
-                  className="rounded p-2 border border-gray-300 w-full mb-3"
-                  value={participant.bankDetails.accountHolder}
-                  onChange={(e) =>
-                    handleBankDetailChange(
-                      category,
-                      index,
-                      "accountHolder",
-                      e.target.value
-                    )
-                  }
+                  type="checkbox"
+                  checked={psgEnabled.runner}
+                  onChange={() => handlePsgToggle("runner")}
+                  className="w-5 h-5"
                 />
-
-                <label className="text-lg font-medium">* Account Number</label>
-                <input
-                  required
-                  type="text"
-                  className="rounded p-2 border border-gray-300 w-full mb-3"
-                  value={participant.bankDetails.accountNumber}
-                  onChange={(e) =>
-                    handleBankDetailChange(
-                      category,
-                      index,
-                      "accountNumber",
-                      e.target.value
-                    )
-                  }
-                />
-
-                <label className="text-lg font-medium">* IFSC Code</label>
-                <input
-                  required
-                  type="text"
-                  className="rounded p-2 border border-gray-300 w-full mb-3"
-                  value={participant.bankDetails.ifscCode}
-                  onChange={(e) =>
-                    handleBankDetailChange(
-                      category,
-                      index,
-                      "ifscCode",
-                      e.target.value
-                    )
-                  }
-                />
-
-                <label className="text-lg font-medium">* Phone Number</label>
-                <input
-                  required
-                  type="tel"
-                  className="rounded p-2 border border-gray-300 w-full mb-3"
-                  value={participant.bankDetails.phoneNumber}
-                  onChange={(e) =>
-                    handleBankDetailChange(
-                      category,
-                      index,
-                      "phoneNumber",
-                      e.target.value
-                    )
-                  }
-                />
-
-                <label className="text-lg font-medium">
-                  * Upload Passbook Image
-                </label>
-                <input
-                  required
-                  type="file"
-                  className="rounded p-2 border border-gray-300 w-full mb-3"
-                  onChange={(e) =>
-                    handleFileUpload(
-                      category,
-                      index,
-                      e.target.files[0],
-                      participant.kriyaIds[0]
-                    )
-                  }
-                />
-              </div>
-            ))}
+                <span className="text-lg">Include Runner-up</span>
+              </label>
+            </div>
           </div>
-        ))}
+
+          {formData["PSG"].map((participant, index) =>
+            renderParticipantForm("PSG", participant, index)
+          )}
+        </div>
+
         <button
           type="submit"
           className="bg-sky-900 text-white p-3 rounded-lg text-lg font-medium hover:bg-sky-700 transition duration-300"
