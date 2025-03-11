@@ -6,29 +6,30 @@ import Heading from "../components/Heading";
 import TextInput from "../components/TextInput";
 import { fetchLogin } from "../API/calls";
 
-const Login = () => {
+const AdminLogin = () => {
   const [formData, setFormData] = useState({
-    eventId: "",
+    adminId: "",
     password: "",
   });
 
   const navigate = useNavigate();
 
   const handleClick = () => {
-    toast.promise(fetchLogin(formData), {
-      loading: "Logging in...",
-      success: (data) => {
-        localStorage.setItem("token", data.data.token);
-        localStorage.setItem("user", formData.eventId.toUpperCase());
-        console.log(localStorage.getItem("user"));
-        navigate("/dashboard");
-
+    // // toast.promise(fetchLogin(formData), {
+    // //   loading: "Logging in...",
+    // //   success: (data) => {
+    // //     localStorage.setItem("adminToken", data.data.token);
+    // //     localStorage.setItem("admin", formData.adminId.toUpperCase());
+    // //     console.log(localStorage.getItem("admin"));
+    // //     navigate("/admin-dashboard");
+        
+    //   },
+    //   error: (error) => {
+    //     console.log(error);
+    //   },
+    // });
+    navigate("/event-results");
         return "Logged in successfully!";
-      },
-      error: (error) => {
-        console.log(error);
-      },
-    });
   };
 
   return (
@@ -36,7 +37,7 @@ const Login = () => {
       <div className="w-5/6 lg:w-[400px] h-fit bg-white rounded-lg p-8 shadow-lg">
         <div className="flex justify-between items-center">
           <div className="">
-            <h1 className="text-xl mb-1">Convenor's Portal</h1>
+            <h1 className="text-xl mb-1">Admin's Portal</h1>
             <Heading>Login</Heading>
           </div>
           <img
@@ -48,11 +49,11 @@ const Login = () => {
         <TextInput
           className="mt-8"
           valueState={[
-            formData.eventId,
-            (val) => setFormData({ ...formData, eventId: val }),
+            formData.adminId,
+            (val) => setFormData({ ...formData, adminId: val }),
           ]}
-          placeholder="Enter Username"
-          title="Username"
+          placeholder="Enter Admin ID"
+          title="Admin ID"
         />
         <TextInput
           className="mt-4"
@@ -65,20 +66,9 @@ const Login = () => {
           type="password"
         />
         <Button text="Login" className="mt-8" handleClick={handleClick} />
-
-        {/* Admin Portal Link */}
-        <p className="mt-4 text-center text-sm text-gray-600">
-          For Admin Portal?{' '}
-          <span
-            className="text-blue-600 cursor-pointer hover:underline"
-            onClick={() => navigate("/admin-login")}
-          >
-            Login
-          </span>
-        </p>
       </div>
     </main>
   );
 };
 
-export default Login;
+export default AdminLogin;
