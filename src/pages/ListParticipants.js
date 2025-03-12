@@ -61,32 +61,31 @@ const ListParticipants = () => {
       {!data ? (
         <h1 className="text-3xl font-semibold">Loading...</h1>
       ) : (
-        <div className="overflow-x-auto">
-          <div className="grid grid-cols-5 gap-6 p-3 bg-gray-200 font-semibold text-lg">
-            <h1>Kriya ID</h1>
-            <h1>Name</h1>
-            <h1 className="hidden lg:block">Mobile</h1>
-            <h1 className="hidden lg:block">Email</h1>
-            {/* <h1>Action</h1> */}
-          </div>
-          <div className="mt-2 max-h-[calc(100vh-20rem)] overflow-y-auto">
-            {data.map((item) => (
-              <div
-                key={item.email}
-                className="grid grid-cols-5 gap-6 p-3 border-b border-gray-300 items-center"
-              >
-                <p>{item.kriyaId}</p>
-                <p>{item.name}</p>
-                <p className="hidden lg:block">{item.phone}</p>
-                <p className="hidden lg:block">{item.email}</p>
-                {/* <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={() => handleDelete(item.email)}
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[1000px]">
+            <div className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 bg-gray-200 font-semibold text-lg">
+              <h1 className="text-left">Kriya ID</h1>
+              <h1 className="text-left">Name</h1>
+              <h1 className="hidden lg:block text-left">Mobile</h1>
+              <h1 className="hidden lg:block text-left">Email</h1>
+              <h1 className="text-left">Round Level</h1>
+            </div>
+
+            <div className="mt-2 max-h-[calc(100vh-20rem)]">
+              {data.map((item) => (
+                <div
+                  key={item.email}
+                  className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 border-b border-gray-300 items-center"
                 >
-                  <HiOutlineTrash size={20} />
-                </button> */}
-              </div>
-            ))}
+
+                  <p className="truncate">{item.kriyaId}</p>
+                  <p className="truncate">{item.name}</p>
+                  <p className="hidden lg:block truncate">{item.phone}</p>
+                  <p className="hidden lg:block truncate">{item.email}</p>
+                  <p className="truncate">{item.roundLevel}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -4,8 +4,8 @@ import axios from "axios";
 import { fetchAttendees, fetchAttendeesPaper, fetchAttendeesWorkshop } from "../API/calls";
 
 const ListAttendance = () => {
-  const [data, setData] = useState([]); // ✅ Initialized as an empty array
-  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [data, setData] = useState([]);
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
   const user = localStorage.getItem("user");
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const ListAttendance = () => {
 
     toast.promise(
       fetchData(user).then((res) => {
-        setData(res.data); // ✅ Ensure data is properly set
+        setData(res.data);
         return "Success";
       }),
       {
@@ -29,39 +29,50 @@ const ListAttendance = () => {
     );
   }, [user]);
 
-  // ✅ Handle Promote Click
-  const handlePromoteClick = async (participant) => {
-    if (!participant.email || !participant.roundLevel) {
-      alert("Please enter all required fields");
+  // ✅ Toggle Checkbox Selection
+  const handleCheckboxChange = (participant) => {
+    setSelectedParticipants((prev) =>
+      prev.includes(participant.email)
+        ? prev.filter((email) => email !== participant.email)
+        : [...prev, participant.email]
+    );
+  };
+
+  // ✅ Promote Selected Participants
+  const handlePromoteClick = async () => {
+    if (selectedParticipants.length === 0) {
+      alert("Please select at least one participant.");
       return;
     }
 
-    let eventId = localStorage.getItem("user");
-
+    const eventId = localStorage.getItem("user");
+    console.log("Promoting selected participants:", selectedParticipants);
+    console.log("Event ID:", eventId);
+    let round = data.find((p) => p.email === selectedParticipants[0]).roundLevel + 1;
     try {
       const response = await axios.post(
-        "https://kriyaconvenordb.psgtech.ac.in/update-round-user",
+        "https://kriyaconvenordb.psgtech.ac.in/update-round-userlist",
         {
           eventId,
-          email: participant.email,
-          round: participant.roundLevel + 1, // ✅ Ensure roundLevel is incremented correctly
+          emailList: selectedParticipants, // ✅ Send only emails
+          round: round
         },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       console.log(response.data);
-      toast.success(`Promoted ${participant.kriyaId} to Round ${participant.roundLevel + 1}`);
+      toast.success("Selected participants promoted successfully!");
 
-      // ✅ Update state to reflect promoted participant
+      // ✅ Update UI with incremented round levels
       setData((prevData) =>
         prevData.map((p) =>
-          p.email === participant.email ? { ...p, roundLevel: p.roundLevel + 1 } : p
+          selectedParticipants.includes(p.email)
+            ? { ...p, roundLevel: p.roundLevel + 1 }
+            : p
         )
       );
 
-      setSelectedParticipant(null); // ✅ Close modal after promotion
+      setSelectedParticipants([]); // ✅ Reset selection after promotion
     } catch (error) {
       console.error(error);
       alert(error.response?.data?.error || "Error updating event details");
@@ -77,32 +88,31 @@ const ListAttendance = () => {
       ) : (
         <div className="w-full overflow-x-auto">
           <div className="min-w-[1000px]">
-            <div className="grid grid-cols-[150px_200px_150px_250px_150px_150px] gap-4 p-3 bg-gray-200 font-semibold text-lg">
+            <div className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 bg-gray-200 font-semibold text-lg">
+              <input type="checkbox" disabled className="opacity-0" />
               <h1 className="text-left">Kriya ID</h1>
               <h1 className="text-left">Name</h1>
               <h1 className="hidden lg:block text-left">Mobile</h1>
               <h1 className="hidden lg:block text-left">Email</h1>
               <h1 className="text-left">Round Level</h1>
-              <h1 className="text-left">Promote</h1>
             </div>
 
             <div className="mt-2 max-h-[calc(100vh-20rem)]">
               {data.map((item) => (
                 <div
                   key={item.email}
-                  className="grid grid-cols-[150px_200px_150px_250px_150px_150px] gap-4 p-3 border-b border-gray-300 items-center"
+                  className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 border-b border-gray-300 items-center"
                 >
+                  <input
+                    type="checkbox"
+                    checked={selectedParticipants.includes(item.email)}
+                    onChange={() => handleCheckboxChange(item)}
+                  />
                   <p className="truncate">{item.kriyaId}</p>
                   <p className="truncate">{item.name}</p>
                   <p className="hidden lg:block truncate">{item.phone}</p>
                   <p className="hidden lg:block truncate">{item.email}</p>
                   <p className="truncate">{item.roundLevel}</p>
-                  <button
-                    className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-700"
-                    onClick={() => setSelectedParticipant(item)} // ✅ Opens modal for confirmation
-                  >
-                    Promote
-                  </button>
                 </div>
               ))}
             </div>
@@ -110,28 +120,15 @@ const ListAttendance = () => {
         </div>
       )}
 
-      {/* ✅ Promotion Confirmation Modal */}
-      {selectedParticipant && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <h2 className="text-xl font-semibold mb-4">
-              Confirm promotion for {selectedParticipant.kriyaId}?
-            </h2>
-            <div className="flex justify-center gap-4">
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
-                onClick={() => handlePromoteClick(selectedParticipant)}
-              >
-                Confirm
-              </button>
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
-                onClick={() => setSelectedParticipant(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+      {/* ✅ Promote Selected Button */}
+      {selectedParticipants.length > 0 && (
+        <div className="mt-6 text-center">
+          <button
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-700"
+            onClick={handlePromoteClick}
+          >
+            Promote Selected
+          </button>
         </div>
       )}
     </div>
