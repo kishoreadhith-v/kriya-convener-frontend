@@ -108,31 +108,28 @@ const ListParticipants = () => {
       ) : (
         <div className="w-full overflow-x-auto">
           <div className="min-w-[1000px]">
-            <div className="grid grid-cols-5 gap-4 p-3 bg-gray-200 font-semibold text-lg text-center">
-              <h1>Kriya ID</h1>
-              <h1>Name</h1>
-              <h1 className="hidden lg:block">Mobile</h1>
-              <h1 className="hidden lg:block">Email</h1>
-              <h1>Round Level</h1>
+            <div className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 bg-gray-200 font-semibold text-lg">
+              <h1 className="text-left">Kriya ID</h1>
+              <h1 className="text-left">Name</h1>
+              <h1 className="hidden lg:block text-left">Mobile</h1>
+              <h1 className="hidden lg:block text-left">Email</h1>
+              <h1 className="text-left">Round Level</h1>
             </div>
 
             <div className="mt-2 max-h-[calc(100vh-20rem)]">
-              {filteredData.length > 0 ? (
-                filteredData.map((item) => (
-                  <div
-                    key={item.email}
-                    className="grid grid-cols-5 gap-4 p-3 border-b border-gray-300 text-center items-center"
-                  >
-                    <p className="truncate">{item.kriyaId}</p>
-                    <p className="truncate">{item.name}</p>
-                    <p className="hidden lg:block truncate">{item.phone}</p>
-                    <p className="hidden lg:block truncate">{item.email}</p>
-                    <p className="truncate">{item.roundLevel}</p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-500">No participants found</p>
-              )}
+              {data.map((item) => (
+                <div
+                  key={item.email}
+                  className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 border-b border-gray-300 items-center"
+                >
+
+                  <p className="truncate">{item.kriyaId}</p>
+                  <p className="truncate">{item.name}</p>
+                  <p className="hidden lg:block truncate">{item.phone}</p>
+                  <p className="hidden lg:block truncate">{item.email}</p>
+                  <p className="truncate">{item.roundLevel}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -15,19 +15,13 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // // toast.promise(fetchLogin(formData), {
-    // //   loading: "Logging in...",
-    // //   success: (data) => {
-    // //     localStorage.setItem("adminToken", data.data.token);
-    // //     localStorage.setItem("admin", formData.adminId.toUpperCase());
-    // //     console.log(localStorage.getItem("admin"));
-    // //     navigate("/admin-dashboard");
-        
-    //   },
-    //   error: (error) => {
-    //     console.log(error);
-    //   },
-    // });
+    if (formData.adminId === "admin" && formData.password === "admin") {
+      navigate("/event-results");
+      return toast.success("Logged in successfully!");
+    }
+     else {
+      return toast.error("Invalid Admin ID or Password");
+    } 
     navigate("/event-results");
         return "Logged in successfully!";
   };
