@@ -43,6 +43,50 @@ export const submitWinnerDetails = async (formData) => {
   }
 };
 
+export const getEventCount = async (id) => {
+  try {
+    const res = await axios.get(`${REGISTER_URL}/participants-count/${id}`);
+
+    console.log("Count details:", res.data);
+    return res.data; // Return the fetched winner details
+  } catch (error) {
+    console.error(
+      "Error fetching count details:",
+      error.response?.data || error.message
+    );
+
+    // Return an error response
+    return {
+      success: false,
+      error:
+        error.response?.data ||
+        "An error occurred while fetching count details",
+    };
+  }
+};
+
+export const getWinnerDetails = async (id) => {
+  try {
+    const res = await axios.get(`${REGISTER_URL}/winner-details/${id}`);
+
+    console.log("Winner details fetched:", res.data);
+    return res.data; // Return the fetched winner details
+  } catch (error) {
+    console.error(
+      "Error fetching winner details:",
+      error.response?.data || error.message
+    );
+
+    // Return an error response
+    return {
+      success: false,
+      error:
+        error.response?.data ||
+        "An error occurred while fetching winner details",
+    };
+  }
+};
+
 export const uploadPdf = async (file, kriyaId) => {
   try {
     const formData = new FormData();
