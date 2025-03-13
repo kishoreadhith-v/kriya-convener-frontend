@@ -63,7 +63,7 @@ const ListParticipants = () => {
       ) : (
         <div className="w-full overflow-x-auto">
           <div className="min-w-[1000px]">
-            <div className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 bg-gray-200 font-semibold text-lg">
+            <div className="grid grid-cols-[150px_150px_200px_200px_50px_50px] gap-4 p-3 bg-gray-200 font-semibold text-lg">
               <h1 className="text-left">Kriya ID</h1>
               <h1 className="text-left">Name</h1>
               <h1 className="hidden lg:block text-left">Mobile</h1>
@@ -75,7 +75,7 @@ const ListParticipants = () => {
               {data.map((item) => (
                 <div
                   key={item.email}
-                  className="grid grid-cols-[50px_150px_200px_150px_250px_150px] gap-4 p-3 border-b border-gray-300 items-center"
+                  className="grid grid-cols-[150px_150px_200px_200px_50px_50px] gap-4 p-3 border-b border-gray-300 items-center"
                 >
 
                   <p className="truncate">{item.kriyaId}</p>
