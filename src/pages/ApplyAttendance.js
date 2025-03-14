@@ -38,8 +38,7 @@ const ApplyAttendance = () => {
   };
 
   const handleApply = () => {
-    if(localStorage.getItem("user").charAt(0)==="E")
-    {
+    if (localStorage.getItem("user").charAt(0) === "E") {
       toast.promise(
         fetchApplyAttendanceIndividual({
           kriyaId,
@@ -58,8 +57,7 @@ const ApplyAttendance = () => {
         }
       );
     }
-    else if(localStorage.getItem("user").charAt(0)==="P")
-    {
+    else if (localStorage.getItem("user").charAt(0) === "P") {
       toast.promise(
         fetchApplyAttendanceIndividualPaper({
           kriyaId,
@@ -78,7 +76,7 @@ const ApplyAttendance = () => {
         }
       );
     }
-    else{
+    else {
       toast.promise(
         fetchApplyAttendanceIndividualWorkshop({
           kriyaId,
@@ -110,7 +108,6 @@ const ApplyAttendance = () => {
           <KriyaInput value={kriyaId} handleChange={handleChange} />
           <div className="mt-8 flex items-center space-x-4">
             <Button
-              disabled={userData ? !userData.isPaid : true}
               text={"Apply"}
               handleClick={handleApply}
             />
