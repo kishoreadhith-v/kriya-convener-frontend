@@ -162,3 +162,25 @@ export const fetchParticipantDetailsForPaper = (id) =>
 
 export const fetchAttendeesCountForEvent = (id) =>
   axios.get(`${BASE_URL}/statistics/attendance-by-eventid/${id}`);
+
+
+export const fetchUserPaymentDetails = async (kriyaid, eventid) => {
+  try {
+    console.log("Fetching user payment details for:", kriyaid, eventid);
+    const res = await axios.post(`${BASE_URL}/payment/user-payment-details`, {
+      kriyaid,
+      eventid,
+    });
+
+    console.log("User payment details fetched:", res.data);
+    return res; // Return the axios response directly
+  } catch (error) {
+    console.error(
+      "Error fetching user payment details:",
+      error.response?.data || error.message
+    );
+
+    // Re-throw the error to be caught by the toast.promise
+    throw error;
+  }
+};

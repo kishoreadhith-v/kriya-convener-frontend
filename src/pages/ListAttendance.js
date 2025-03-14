@@ -15,7 +15,8 @@ const ListAttendance = () => {
   useEffect(() => {
     const fetchData =
       user.charAt(0) === "E" ? fetchAttendees : user.charAt(0) === "P" ? fetchAttendeesPaper : fetchAttendeesWorkshop
-
+    console.log(fetchData === fetchAttendeesWorkshop)
+    console.log(user)
     toast.promise(
       fetchData(user).then((res) => {
         setData(res.data)
