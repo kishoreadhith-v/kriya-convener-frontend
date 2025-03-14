@@ -159,3 +159,6 @@ export const fetchParticipantDetailsForWorkshop = (id) =>
 
 export const fetchParticipantDetailsForPaper = (id) =>
   axios.get(`${REGISTER_URL}/ppparticipants/${id}`, {});
+
+export const fetchAttendeesCountForEvent = (id) =>
+  axios.get(`${BASE_URL}/statistics/attendance-by-eventid/${id}`);
