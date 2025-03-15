@@ -3,6 +3,8 @@ import {
   fetchParticipantDetailsForevent,
   getEventCount,
   fetchAttendeesCountForEvent,
+  fetchParticipantDetailsForWorkshop,
+  fetchParticipantDetailsForPaper,
 } from "../API/calls";
 
 const LoadingSkeleton = () => (
@@ -38,8 +40,16 @@ const ParticipantList = ({ eid }) => {
       try {
         console.log("Event ID:", eid);
 
+        // Determine which fetch function to use based on the first character of eid
+        const fetchParticipantDetails =
+          eid.charAt(0) === "E"
+            ? fetchParticipantDetailsForevent
+            : eid.charAt(0) === "W"
+            ? fetchParticipantDetailsForWorkshop
+            : fetchParticipantDetailsForPaper;
+
         // Fetch participant details
-        const participantRes = await fetchParticipantDetailsForevent(eid);
+        const participantRes = await fetchParticipantDetails(eid);
         console.log("Participant details:", participantRes.data);
         setParticipants(participantRes.data);
 
@@ -84,7 +94,9 @@ const ParticipantList = ({ eid }) => {
           {/* Display Participant Counts */}
           {count && (
             <div className="mb-6 p-4 bg-white shadow-md rounded-lg text-gray-700">
-              <p className="text-lg font-semibold">Event Name: {count.eventName}</p>
+              <p className="text-lg font-semibold">
+                Event Name: {count.eventName}
+              </p>
               <p className="text-lg font-semibold">
                 Total Participants: {count.totalParticipants}
               </p>
@@ -143,7 +155,9 @@ const ParticipantList = ({ eid }) => {
                       key={index}
                       className="border-t border-gray-200 hover:bg-blue-50 transition"
                     >
-                      <td className="p-4 text-gray-700">{participant.kriyaId}</td>
+                      <td className="p-4 text-gray-700">
+                        {participant.kriyaId}
+                      </td>
                       <td className="p-4 text-gray-700">{participant.name}</td>
                       <td className="p-4 text-gray-700">{participant.email}</td>
                       <td className="p-4 text-gray-700">
@@ -152,12 +166,12 @@ const ParticipantList = ({ eid }) => {
                       <td className="p-4 text-center font-semibold">
                         <span
                           className={
-                            participant.isAttended
+                            participant.attendedAt !== null
                               ? "text-green-600"
                               : "text-red-600"
                           }
                         >
-                          {participant.isAttended ? "Attended" : "Missed"}
+                          {participant.attendedAt ? "Attended" : "Missed"}
                         </span>
                       </td>
                     </tr>
