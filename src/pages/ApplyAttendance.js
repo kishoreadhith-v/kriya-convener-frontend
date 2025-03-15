@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import OtpInput from "react-otp-input";
 import {
   fetchApplyAttendanceIndividual,
@@ -11,10 +11,55 @@ import { toast } from "react-hot-toast";
 import KriyaInput from "../components/KriyaInput";
 import Row from "../components/Row";
 import Button from "../components/Button";
+import axios from "axios"; // Assuming axios is used for API calls
 
 const ApplyAttendance = () => {
   const [kriyaId, setKriyaId] = useState("");
   const [userData, setUserData] = useState(null);
+  const [teamData, setTeamData] = useState(null);
+  const [psgTeams, setPsgTeams] = useState("");
+  const [nonPsgTeams, setNonPsgTeams] = useState("");
+  const [showTeamInputs, setShowTeamInputs] = useState(false);
+
+  const currentUser = localStorage.getItem("user");
+
+  // Fetch team data when component mounts
+  useEffect(() => {
+    if (currentUser && currentUser.charAt(0) === "E") {
+      fetchTeamData();
+    }
+  }, [currentUser]);
+
+  const fetchTeamData = async () => {
+    try {
+      const response = await axios.get(`https://kriyaconvenordb.psgtech.ac.in/event-teams/${currentUser}`);
+      setTeamData(response.data);
+
+      // Check if both team counts are null and show input fields if needed
+      if (response.data.NoOfPSGteams === null && response.data.NoOfNONPSGteams === null) {
+        setShowTeamInputs(true);
+      } else {
+        setShowTeamInputs(false);
+      }
+    } catch (error) {
+      console.error("Error fetching team data:", error);
+    }
+  };
+
+  const handleUpdateTeamCounts = async () => {
+    try {
+      const response = await axios.put(`https://kriyaconvenordb.psgtech.ac.in/event-teams/update/${currentUser}`, {
+        NoOfPSGteams: parseInt(psgTeams),
+        NoOfNONPSGteams: parseInt(nonPsgTeams)
+      });
+
+      toast.success("Team counts updated successfully!");
+      setTeamData(response.data.data);
+      setShowTeamInputs(false);
+    } catch (error) {
+      toast.error(`Error updating team counts: ${error.response?.data?.error || error.message}`);
+    }
+  };
 
   const handleChange = (val) => {
     setKriyaId(val);
@@ -30,7 +75,7 @@ const ApplyAttendance = () => {
             success: (data) => {
               console.log("Workshop user data:", data.data.user);
               setUserData(data.data.user);
-              // Check if data.data exists and has a user property
+              return "Workshop participant details loaded successfully";
             },
             error: (err) => {
               setKriyaId("");
@@ -123,13 +168,17 @@ const ApplyAttendance = () => {
   };
 
   // Determine if the user is a workshop participant
-  const isWorkshopUser = localStorage.getItem("user")?.charAt(0) === "W";
+  const isWorkshopUser = currentUser?.charAt(0) === "W";
+  const isEventUser = currentUser?.charAt(0) === "E";
 
   return (
     <div className="h-full w-full overflow-y-auto font-poppins pb-16 px-4">
       <h1 className="text-4xl font-semibold text-sky-900 mb-8">
         Apply for Attendance
       </h1>
+
+      {/* Team Count Input Section (Only for Event organizers when both counts are null) */}
+
       <div className="flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8 h-fit">
         <div className="w-full lg:w-fit h-fit">
           <p className="text-lg">Enter Kriya Id</p>
@@ -204,6 +253,62 @@ const ApplyAttendance = () => {
           </div>
         )}
       </div>
+      {isEventUser && showTeamInputs && (
+        <div className="mb-8 p-4 bg-gray-100 rounded-lg">
+          <h2 className="text-2xl font-semibold text-sky-900 mb-4">Event Team Configuration</h2>
+          <p className="text-gray-700 mb-4">
+            Please enter the number of PSG and non-PSG teams for this event.
+            <span className="font-semibold text-red-500"> Note: This can only be set once.</span>
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-lg mb-2">Number of PSG Teams</label>
+              <input
+                type="number"
+                value={psgTeams}
+                onChange={(e) => setPsgTeams(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Enter number"
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-lg mb-2">Number of Non-PSG Teams</label>
+              <input
+                type="number"
+                value={nonPsgTeams}
+                onChange={(e) => setNonPsgTeams(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Enter number"
+                min="0"
+              />
+            </div>
+          </div>
+          <Button
+            text="Save Team Counts"
+            handleClick={handleUpdateTeamCounts}
+            className="mt-4"
+          />
+        </div>
+      )}
+
+      {/* Team Count Display Section (When counts are already set) */}
+      {isEventUser && teamData && !showTeamInputs && (
+        <div className="mb-8 p-4 bg-gray-100 rounded-lg">
+          <h2 className="text-2xl font-semibold text-sky-900 mb-4">Event Team Configuration</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-lg font-medium">PSG Teams</p>
+              <p className="text-3xl font-bold text-sky-700">{teamData.NoOfPSGteams}</p>
+            </div>
+            <div>
+              <p className="text-lg font-medium">Non-PSG Teams</p>
+              <p className="text-3xl font-bold text-sky-700">{teamData.NoOfNONPSGteams}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -10,7 +10,8 @@ import ListParticipants from "./pages/ListParticipants";
 import ResultPage from "./pages/ResultPage";
 import PromoteRound from "./pages/PromoteRound";
 import AdminLogin from "./pages/AdminLogin";
-import EventResults from "./pages/EventResult"; 
+import EventResults from "./pages/EventResult";
+import OnSpotRegistration from "./pages/OnSpotRegistration";
 
 const App = () => {
   return (
@@ -20,7 +21,7 @@ const App = () => {
         <Routes>
           <Route path="login" element={<Login />} />
           <Route path="admin-login" element={<AdminLogin />} />
-          <Route path="event-results" element={<EventResults />} /> 
+          <Route path="event-results" element={<EventResults />} />
 
           <Route path="dashboard" element={<PortalWrapper />}>
             <Route path="apply-attendance" element={<ApplyAttendance />} />
@@ -28,6 +29,7 @@ const App = () => {
             <Route path="list-participants" element={<ListParticipants />} />
             <Route path="result" element={<ResultPage />} />
             <Route path="promote" element={<PromoteRound />} />
+            <Route path="on-spot-registration" element={<OnSpotRegistration />} />
 
             <Route index element={<Navigate to="/dashboard/apply-attendance" />} />
           </Route>
