@@ -45,6 +45,15 @@ const PortalWrapper = () => {
             </p>
           </Link>
           <Link
+            to="/dashboard/on-spot-registration"
+            className="flex items-center space-x-4 group"
+          >
+            <FiUserCheck className="text-xl text-sky-900 group-hover:opacity-70" />
+            <p className="text-lg text-sky-900 group-hover:opacity-70">
+              On-Spot Registration
+            </p>
+          </Link>
+          <Link
             to="/dashboard/list-attendance"
             className="flex items-center space-x-4 group"
           >
